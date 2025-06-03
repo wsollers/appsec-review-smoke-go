@@ -1,0 +1,14 @@
+diff --git a/admin.go b/admin.go
+index 7129a77..09be295 100644
+--- a/admin.go
++++ b/admin.go
+@@ -49,8 +49,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 	case "recent":
+ 		n, err := strconv.Atoi(arg)
+ 		if err != nil {
+-			status = http.StatusBadRequest
+-			break
++			n = 10
+ 		}
+ 		if err := recentUsers(db, n); err != nil {
+ 			status = http.StatusInternalServerError

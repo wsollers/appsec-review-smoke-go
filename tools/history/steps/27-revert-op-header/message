@@ -1,0 +1,3 @@
+Revert "Add an X-Admin-Op header to every reply"
+
+The header leaks the op name to the proxy logs; revert until the proxy strips it.

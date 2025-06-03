@@ -1,0 +1,7 @@
+Fix command injection in runTool (CWE-78)
+
+The tool op passed the tool name from the request into a shell command line
+and ran it with /bin/sh -c, so a name containing shell metacharacters ran
+arbitrary commands as the server user. runTool now matches the name against
+the two tools it supports and performs them directly: there is no command
+string and no shell, so no request input reaches a command interpreter.

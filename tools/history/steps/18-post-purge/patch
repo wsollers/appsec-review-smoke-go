@@ -1,0 +1,15 @@
+diff --git a/admin.go b/admin.go
+index aa6f0f6..a97204f 100644
+--- a/admin.go
++++ b/admin.go
+@@ -61,7 +61,9 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 	case "audit":
+ 		recordAccess(r)
+ 	case "purge":
+-		if err := purgeExpired(db); err != nil {
++		if r.Method != http.MethodPost {
++			status = http.StatusMethodNotAllowed
++		} else if err := purgeExpired(db); err != nil {
+ 			status = http.StatusInternalServerError
+ 		}
+ 	case "go":

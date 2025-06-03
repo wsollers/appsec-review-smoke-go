@@ -1,0 +1,7 @@
+Fix path traversal in readAsset (CWE-22)
+
+The asset op joined the requested name onto the asset root and read the
+result, so "../" sequences read files outside the asset directory.
+readAsset now cleans the joined path with filepath.Clean and refuses any
+path that does not start with the asset root before reading it; the check
+runs on every path to os.ReadFile, so a traversal cannot reach the read.

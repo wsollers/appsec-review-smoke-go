@@ -1,0 +1,3 @@
+Rename audit.go to logging.go
+
+The file holds the access-log helper; the name now says so.

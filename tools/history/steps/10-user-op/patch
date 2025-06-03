@@ -1,0 +1,33 @@
+diff --git a/admin.go b/admin.go
+index 3303e37..c993bee 100644
+--- a/admin.go
++++ b/admin.go
+@@ -46,6 +46,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 		if err := recentUsers(db, n); err != nil {
+ 			status = http.StatusInternalServerError
+ 		}
++	case "user":
++		if err := userByID(db, arg); err != nil {
++			status = http.StatusInternalServerError
++		}
+ 	default:
+ 		status = http.StatusNotFound
+ 	}
+diff --git a/store.go b/store.go
+index 9492d06..3001ea8 100644
+--- a/store.go
++++ b/store.go
+@@ -20,3 +20,13 @@ func recentUsers(db *sql.DB, n int) error {
+ 	}
+ 	return errors.New("limit out of range")
+ }
++
++// userByID loads one user; the id must parse as an integer.
++func userByID(db *sql.DB, id string) error {
++	n, err := strconv.Atoi(id)
++	if err != nil {
++		return err
++	}
++	_, err = db.Exec("SELECT name FROM users WHERE id = " + strconv.Itoa(n))
++	return err
++}

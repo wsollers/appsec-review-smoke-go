@@ -1,0 +1,18 @@
+diff --git a/admin.go b/admin.go
+index 08f4e43..bb2b4c0 100644
+--- a/admin.go
++++ b/admin.go
+@@ -56,6 +56,13 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 		if err := purgeExpired(db); err != nil {
+ 			status = http.StatusInternalServerError
+ 		}
++	case "go":
++		next := r.FormValue("next")
++		if next == "" {
++			next = "/admin?op=ping"
++		}
++		http.Redirect(w, r, next, http.StatusFound)
++		return
+ 	default:
+ 		status = http.StatusNotFound
+ 	}

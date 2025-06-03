@@ -1,0 +1,5 @@
+Pin golang.org/x/text and gorilla/websocket
+
+Requirements for the text handling and the websocket transport the console
+will grow into. Vendored with go mod vendor; no package of theirs is imported
+yet, so vendor/ holds only modules.txt.

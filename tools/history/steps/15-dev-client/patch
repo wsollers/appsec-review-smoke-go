@@ -1,0 +1,20 @@
+diff --git a/devtls.go b/devtls.go
+new file mode 100644
+index 0000000..017cebc
+--- /dev/null
++++ b/devtls.go
+@@ -0,0 +1,14 @@
++// Development-only HTTP client. This repository is a deliberately vulnerable smoke target for
++// appsec-review; see README.md.
++package main
++
++import (
++	"crypto/tls"
++	"net/http"
++)
++
++// insecureClient returns a client for the local development proxy, which presents a self-signed
++// certificate. Nothing calls it.
++func insecureClient() *http.Client {
++	return &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
++}

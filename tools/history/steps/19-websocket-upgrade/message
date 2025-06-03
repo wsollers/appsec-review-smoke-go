@@ -1,0 +1,8 @@
+Upgrade gorilla/websocket from 1.4.0 to 1.5.3
+
+gorilla/websocket before 1.4.1 can overflow the frame length while reading a
+frame, so a peer can make the reader allocate until the process runs out of
+memory (CVE-2020-27813, GO-2020-0019). We keep the module pinned for the
+transport the console will grow into, so the requirement moves to 1.5.3, the
+current release; go.sum and vendor/modules.txt are regenerated with go mod
+vendor.

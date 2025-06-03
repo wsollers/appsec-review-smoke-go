@@ -1,0 +1,54 @@
+diff --git a/admin.go b/admin.go
+new file mode 100644
+index 0000000..b550334
+--- /dev/null
++++ b/admin.go
+@@ -0,0 +1,33 @@
++// Admin console of the smoke server. This repository is a deliberately vulnerable smoke target for
++// appsec-review; see README.md.
++package main
++
++import (
++	"fmt"
++	"net/http"
++)
++
++func init() {
++	http.HandleFunc("/admin", adminHandler)
++}
++
++// adminHandler serves /admin: a small operator console driven by the op parameter.
++func adminHandler(w http.ResponseWriter, r *http.Request) {
++	op := r.FormValue("op")
++	db, err := openStore()
++	if err != nil {
++		http.Error(w, "store unavailable", http.StatusInternalServerError)
++		return
++	}
++	defer db.Close()
++	status := http.StatusOK
++	switch op {
++	case "ping":
++		fmt.Fprintln(w, "pong")
++	default:
++		status = http.StatusNotFound
++	}
++	if status != http.StatusOK {
++		w.WriteHeader(status)
++	}
++}
+diff --git a/store.go b/store.go
+new file mode 100644
+index 0000000..fc52461
+--- /dev/null
++++ b/store.go
+@@ -0,0 +1,9 @@
++// Storage helpers of the smoke server. This repository is a deliberately vulnerable smoke target for
++// appsec-review; see README.md.
++package main
++
++import "database/sql"
++
++func openStore() (*sql.DB, error) {
++	return sql.Open("sqlite", "app.db")
++}

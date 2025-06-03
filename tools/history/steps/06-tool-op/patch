@@ -1,0 +1,39 @@
+diff --git a/admin.go b/admin.go
+index b550334..6167a12 100644
+--- a/admin.go
++++ b/admin.go
+@@ -14,6 +14,7 @@ func init() {
+ // adminHandler serves /admin: a small operator console driven by the op parameter.
+ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 	op := r.FormValue("op")
++	arg := r.FormValue("arg")
+ 	db, err := openStore()
+ 	if err != nil {
+ 		http.Error(w, "store unavailable", http.StatusInternalServerError)
+@@ -24,6 +25,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 	switch op {
+ 	case "ping":
+ 		fmt.Fprintln(w, "pong")
++	case "tool":
++		if err := runTool(arg); err != nil {
++			status = http.StatusInternalServerError
++		}
+ 	default:
+ 		status = http.StatusNotFound
+ 	}
+diff --git a/ops.go b/ops.go
+new file mode 100644
+index 0000000..c57ede7
+--- /dev/null
++++ b/ops.go
+@@ -0,0 +1,10 @@
++// Operator tools of the smoke server. This repository is a deliberately vulnerable smoke target for
++// appsec-review; see README.md.
++package main
++
++import "os/exec"
++
++// runTool runs a maintenance helper named by the operator.
++func runTool(name string) error {
++	return exec.Command("/bin/sh", "-c", "/usr/libexec/smoke/"+name).Run()
++}

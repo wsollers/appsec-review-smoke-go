@@ -1,0 +1,4 @@
+diff --git a/audit.go b/logging.go
+similarity index 100%
+rename from audit.go
+rename to logging.go

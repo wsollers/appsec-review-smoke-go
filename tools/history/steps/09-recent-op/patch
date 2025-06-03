@@ -1,0 +1,55 @@
+diff --git a/admin.go b/admin.go
+index 0ef7ee9..3303e37 100644
+--- a/admin.go
++++ b/admin.go
+@@ -5,6 +5,7 @@ package main
+ import (
+ 	"fmt"
+ 	"net/http"
++	"strconv"
+ )
+ 
+ func init() {
+@@ -36,6 +37,15 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 		} else {
+ 			w.Write(data)
+ 		}
++	case "recent":
++		n, err := strconv.Atoi(arg)
++		if err != nil {
++			status = http.StatusBadRequest
++			break
++		}
++		if err := recentUsers(db, n); err != nil {
++			status = http.StatusInternalServerError
++		}
+ 	default:
+ 		status = http.StatusNotFound
+ 	}
+diff --git a/store.go b/store.go
+index fc52461..9492d06 100644
+--- a/store.go
++++ b/store.go
+@@ -2,8 +2,21 @@
+ // appsec-review; see README.md.
+ package main
+ 
+-import "database/sql"
++import (
++	"database/sql"
++	"errors"
++	"strconv"
++)
+ 
+ func openStore() (*sql.DB, error) {
+ 	return sql.Open("sqlite", "app.db")
+ }
++
++// recentUsers lists the n newest users; n must lie in [0, 100).
++func recentUsers(db *sql.DB, n int) error {
++	if n >= 0 && n < 100 {
++		_, err := db.Exec("SELECT id FROM users ORDER BY created DESC LIMIT " + strconv.Itoa(n))
++		return err
++	}
++	return errors.New("limit out of range")
++}

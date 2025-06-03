@@ -1,0 +1,15 @@
+diff --git a/.editorconfig b/.editorconfig
+new file mode 100644
+index 0000000..555ea3a
+--- /dev/null
++++ b/.editorconfig
+@@ -0,0 +1,9 @@
++root = true
++
++[*]
++end_of_line = lf
++insert_final_newline = true
++charset = utf-8
++
++[*.go]
++indent_style = tab

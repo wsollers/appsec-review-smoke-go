@@ -1,0 +1,32 @@
+diff --git a/admin.go b/admin.go
+index c993bee..8027cf9 100644
+--- a/admin.go
++++ b/admin.go
+@@ -50,6 +50,8 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 		if err := userByID(db, arg); err != nil {
+ 			status = http.StatusInternalServerError
+ 		}
++	case "audit":
++		recordAccess(r)
+ 	default:
+ 		status = http.StatusNotFound
+ 	}
+diff --git a/audit.go b/audit.go
+new file mode 100644
+index 0000000..5bf8e74
+--- /dev/null
++++ b/audit.go
+@@ -0,0 +1,13 @@
++// Access logging for the admin console. This repository is a deliberately vulnerable smoke target for
++// appsec-review; see README.md.
++package main
++
++import (
++	"log"
++	"net/http"
++)
++
++// recordAccess writes one audit line naming the operator and the client address.
++func recordAccess(r *http.Request) {
++	log.Printf("admin access user=%s from=%s", r.FormValue("user"), r.RemoteAddr)
++}

@@ -1,0 +1,14 @@
+diff --git a/store.go b/store.go
+index bc80729..5b89974 100644
+--- a/store.go
++++ b/store.go
+@@ -39,3 +39,9 @@ func purgeExpired(db *sql.DB) error {
+ 	_, err := db.Exec("DELETE FROM sessions WHERE age_days > " + sessionRetentionDays)
+ 	return err
+ }
++
++// legacyLookup is the pre-migration name lookup; nothing calls it.
++func legacyLookup(db *sql.DB, name string) error {
++	_, err := db.Exec("SELECT id FROM users WHERE name = '" + name + "'")
++	return err
++}

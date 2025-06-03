@@ -1,0 +1,33 @@
+diff --git a/go.mod b/go.mod
+index 5cd6702..4783652 100644
+--- a/go.mod
++++ b/go.mod
+@@ -1,3 +1,8 @@
+ module github.com/wsollers/appsec-review-smoke-go
+ 
+ go 1.22
++
++require (
++	github.com/gorilla/websocket v1.4.0
++	golang.org/x/text v0.3.0
++)
+diff --git a/go.sum b/go.sum
+new file mode 100644
+index 0000000..2a6adf6
+--- /dev/null
++++ b/go.sum
+@@ -0,0 +1,4 @@
++github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
++github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
++golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
++golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+diff --git a/vendor/modules.txt b/vendor/modules.txt
+new file mode 100644
+index 0000000..4ca3db6
+--- /dev/null
++++ b/vendor/modules.txt
+@@ -0,0 +1,4 @@
++# github.com/gorilla/websocket v1.4.0
++## explicit
++# golang.org/x/text v0.3.0
++## explicit

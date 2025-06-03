@@ -1,0 +1,15 @@
+diff --git a/admin.go b/admin.go
+index a30224e..aa6f0f6 100644
+--- a/admin.go
++++ b/admin.go
+@@ -20,6 +20,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
+ 	}
+ 	op := r.FormValue("op")
+ 	arg := r.FormValue("arg")
++	if op == "" || len(op) > 32 {
++		http.Error(w, "bad op", http.StatusBadRequest)
++		return
++	}
+ 	db, err := openStore()
+ 	if err != nil {
+ 		http.Error(w, "store unavailable", http.StatusInternalServerError)

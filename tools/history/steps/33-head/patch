@@ -1,0 +1,13 @@
+diff --git a/admin.go b/admin.go
+index 09be295..35c3beb 100644
+--- a/admin.go
++++ b/admin.go
+@@ -14,7 +14,7 @@ func init() {
+ 
+ // adminHandler serves /admin: a small operator console driven by the op parameter.
+ func adminHandler(w http.ResponseWriter, r *http.Request) {
+-	if r.Method != http.MethodGet && r.Method != http.MethodPost {
++	if r.Method != http.MethodGet && r.Method != http.MethodPost && r.Method != http.MethodHead {
+ 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+ 		return
+ 	}

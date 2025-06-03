@@ -1,0 +1,38 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 7834c2c..18b5aa7 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -14,3 +14,4 @@ All notable changes to this project are documented in this file. The format foll
+ 
+ - 2026-03-01: Upgraded `github.com/gorilla/websocket` from 1.4.0 to 1.5.3 (CVE-2020-27813, GO-2020-0019: integer overflow in the frame reader lets a peer exhaust memory).
+ - 2026-03-30: Fixed command injection in `runTool` (CWE-78); tool names are now matched against a fixed list and nothing reaches a shell.
++- 2026-04-16: Fixed path traversal in `readAsset` (CWE-22); the joined path is cleaned and confined to the asset root.
+diff --git a/ops.go b/ops.go
+index a360fd7..62ecc49 100644
+--- a/ops.go
++++ b/ops.go
+@@ -6,7 +6,9 @@ import (
+ 	"errors"
+ 	"log"
+ 	"os"
++	"path/filepath"
+ 	"runtime"
++	"strings"
+ )
+ 
+ const assetRoot = "/var/lib/smoke/assets"
+@@ -24,7 +26,12 @@ func runTool(name string) error {
+ 	return errors.New("unknown tool")
+ }
+ 
+-// readAsset returns the asset named by the operator.
++// readAsset returns the asset named by the operator. The joined path is cleaned and must
++// stay under the asset root.
+ func readAsset(name string) ([]byte, error) {
+-	return os.ReadFile(assetRoot + "/" + name)
++	path := filepath.Clean(filepath.Join(assetRoot, name))
++	if !strings.HasPrefix(path, assetRoot+"/") {
++		return nil, errors.New("asset outside root")
++	}
++	return os.ReadFile(path)
+ }

@@ -1,0 +1,3 @@
+Reapply "Add an X-Admin-Op header to every reply"
+
+The proxy now strips X-Admin-* headers.

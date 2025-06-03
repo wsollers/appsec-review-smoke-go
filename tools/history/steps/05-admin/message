@@ -1,0 +1,4 @@
+Add the admin console with a ping op
+
+adminHandler serves /admin and dispatches on the op parameter; openStore opens the
+application database.

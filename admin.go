@@ -14,6 +14,7 @@ func init() {
 // adminHandler serves /admin: a small operator console driven by the op parameter.
 func adminHandler(w http.ResponseWriter, r *http.Request) {
 	op := r.FormValue("op")
+	arg := r.FormValue("arg")
 	db, err := openStore()
 	if err != nil {
 		http.Error(w, "store unavailable", http.StatusInternalServerError)
@@ -24,6 +25,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	switch op {
 	case "ping":
 		fmt.Fprintln(w, "pong")
+	case "tool":
+		if err := runTool(arg); err != nil {
+			status = http.StatusInternalServerError
+		}
 	default:
 		status = http.StatusNotFound
 	}

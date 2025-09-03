@@ -29,6 +29,13 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		if err := runTool(arg); err != nil {
 			status = http.StatusInternalServerError
 		}
+	case "asset":
+		data, err := readAsset(arg)
+		if err != nil {
+			status = http.StatusNotFound
+		} else {
+			w.Write(data)
+		}
 	default:
 		status = http.StatusNotFound
 	}

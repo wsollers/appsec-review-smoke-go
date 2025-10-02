@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 func init() {
@@ -35,6 +36,15 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusNotFound
 		} else {
 			w.Write(data)
+		}
+	case "recent":
+		n, err := strconv.Atoi(arg)
+		if err != nil {
+			status = http.StatusBadRequest
+			break
+		}
+		if err := recentUsers(db, n); err != nil {
+			status = http.StatusInternalServerError
 		}
 	default:
 		status = http.StatusNotFound

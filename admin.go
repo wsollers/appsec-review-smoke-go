@@ -46,6 +46,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		if err := recentUsers(db, n); err != nil {
 			status = http.StatusInternalServerError
 		}
+	case "user":
+		if err := userByID(db, arg); err != nil {
+			status = http.StatusInternalServerError
+		}
 	default:
 		status = http.StatusNotFound
 	}

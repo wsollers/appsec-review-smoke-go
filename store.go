@@ -20,3 +20,13 @@ func recentUsers(db *sql.DB, n int) error {
 	}
 	return errors.New("limit out of range")
 }
+
+// userByID loads one user; the id must parse as an integer.
+func userByID(db *sql.DB, id string) error {
+	n, err := strconv.Atoi(id)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("SELECT name FROM users WHERE id = " + strconv.Itoa(n))
+	return err
+}

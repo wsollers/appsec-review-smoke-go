@@ -50,6 +50,8 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		if err := userByID(db, arg); err != nil {
 			status = http.StatusInternalServerError
 		}
+	case "audit":
+		recordAccess(r)
 	default:
 		status = http.StatusNotFound
 	}

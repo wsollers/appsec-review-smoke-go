@@ -8,6 +8,9 @@ import (
 	"strconv"
 )
 
+// Sessions older than this many days are purged.
+const sessionRetentionDays = "30"
+
 func openStore() (*sql.DB, error) {
 	return sql.Open("sqlite", "app.db")
 }
@@ -28,5 +31,11 @@ func userByID(db *sql.DB, id string) error {
 		return err
 	}
 	_, err = db.Exec("SELECT name FROM users WHERE id = " + strconv.Itoa(n))
+	return err
+}
+
+// purgeExpired removes sessions past the retention period.
+func purgeExpired(db *sql.DB) error {
+	_, err := db.Exec("DELETE FROM sessions WHERE age_days > " + sessionRetentionDays)
 	return err
 }

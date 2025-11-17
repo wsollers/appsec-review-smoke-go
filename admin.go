@@ -52,6 +52,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	case "audit":
 		recordAccess(r)
+	case "purge":
+		if err := purgeExpired(db); err != nil {
+			status = http.StatusInternalServerError
+		}
 	default:
 		status = http.StatusNotFound
 	}

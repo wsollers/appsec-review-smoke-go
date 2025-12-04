@@ -56,6 +56,13 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 		if err := purgeExpired(db); err != nil {
 			status = http.StatusInternalServerError
 		}
+	case "go":
+		next := r.FormValue("next")
+		if next == "" {
+			next = "/admin?op=ping"
+		}
+		http.Redirect(w, r, next, http.StatusFound)
+		return
 	default:
 		status = http.StatusNotFound
 	}

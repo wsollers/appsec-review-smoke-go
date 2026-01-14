@@ -14,6 +14,10 @@ func init() {
 
 // adminHandler serves /admin: a small operator console driven by the op parameter.
 func adminHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	op := r.FormValue("op")
 	arg := r.FormValue("arg")
 	db, err := openStore()

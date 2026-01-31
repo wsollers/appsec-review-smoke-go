@@ -20,6 +20,10 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	op := r.FormValue("op")
 	arg := r.FormValue("arg")
+	if op == "" || len(op) > 32 {
+		http.Error(w, "bad op", http.StatusBadRequest)
+		return
+	}
 	db, err := openStore()
 	if err != nil {
 		http.Error(w, "store unavailable", http.StatusInternalServerError)

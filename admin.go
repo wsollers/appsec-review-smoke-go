@@ -61,7 +61,9 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	case "audit":
 		recordAccess(r)
 	case "purge":
-		if err := purgeExpired(db); err != nil {
+		if r.Method != http.MethodPost {
+			status = http.StatusMethodNotAllowed
+		} else if err := purgeExpired(db); err != nil {
 			status = http.StatusInternalServerError
 		}
 	case "go":

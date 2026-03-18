@@ -9,3 +9,7 @@ All notable changes to this project are documented in this file. The format foll
 
 - Admin console under `/admin` with ping, tool and asset ops.
 - Pinned module requirements for the websocket transport and the planned command-line client.
+
+### Security
+
+- 2026-03-01: Upgraded `github.com/gorilla/websocket` from 1.4.0 to 1.5.3 (CVE-2020-27813, GO-2020-0019: integer overflow in the frame reader lets a peer exhaust memory).

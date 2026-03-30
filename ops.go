@@ -3,15 +3,25 @@
 package main
 
 import (
+	"errors"
+	"log"
 	"os"
-	"os/exec"
+	"runtime"
 )
 
 const assetRoot = "/var/lib/smoke/assets"
 
-// runTool runs a maintenance helper named by the operator.
+// runTool performs one of the two maintenance tools; any other name is refused.
 func runTool(name string) error {
-	return exec.Command("/bin/sh", "-c", "/usr/libexec/smoke/"+name).Run()
+	switch name {
+	case "status":
+		log.Printf("status ok")
+		return nil
+	case "version":
+		log.Printf("smoke %s", runtime.Version())
+		return nil
+	}
+	return errors.New("unknown tool")
 }
 
 // readAsset returns the asset named by the operator.

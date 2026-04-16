@@ -6,7 +6,9 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 const assetRoot = "/var/lib/smoke/assets"
@@ -24,7 +26,12 @@ func runTool(name string) error {
 	return errors.New("unknown tool")
 }
 
-// readAsset returns the asset named by the operator.
+// readAsset returns the asset named by the operator. The joined path is cleaned and must
+// stay under the asset root.
 func readAsset(name string) ([]byte, error) {
-	return os.ReadFile(assetRoot + "/" + name)
+	path := filepath.Clean(filepath.Join(assetRoot, name))
+	if !strings.HasPrefix(path, assetRoot+"/") {
+		return nil, errors.New("asset outside root")
+	}
+	return os.ReadFile(path)
 }

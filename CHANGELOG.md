@@ -14,3 +14,4 @@ All notable changes to this project are documented in this file. The format foll
 
 - 2026-03-01: Upgraded `github.com/gorilla/websocket` from 1.4.0 to 1.5.3 (CVE-2020-27813, GO-2020-0019: integer overflow in the frame reader lets a peer exhaust memory).
 - 2026-03-30: Fixed command injection in `runTool` (CWE-78); tool names are now matched against a fixed list and nothing reaches a shell.
+- 2026-04-16: Fixed path traversal in `readAsset` (CWE-22); the joined path is cleaned and confined to the asset root.

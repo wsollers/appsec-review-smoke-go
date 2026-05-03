@@ -16,6 +16,8 @@ func openStore() (*sql.DB, error) {
 }
 
 // recentUsers lists the n newest users; n must lie in [0, 100).
+// The limit is range-checked on the only path to the query, so the concatenated operand is
+// the decimal form of a bounded integer (reviewed 2026-05; see the commit log).
 func recentUsers(db *sql.DB, n int) error {
 	if n >= 0 && n < 100 {
 		_, err := db.Exec("SELECT id FROM users ORDER BY created DESC LIMIT " + strconv.Itoa(n))

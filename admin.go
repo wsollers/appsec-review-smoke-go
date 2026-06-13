@@ -31,6 +31,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	status := http.StatusOK
+	w.Header().Set("X-Admin-Op", op)
 	switch op {
 	case "ping":
 		fmt.Fprintln(w, "pong")

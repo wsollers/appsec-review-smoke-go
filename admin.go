@@ -49,8 +49,7 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 	case "recent":
 		n, err := strconv.Atoi(arg)
 		if err != nil {
-			status = http.StatusBadRequest
-			break
+			n = 10
 		}
 		if err := recentUsers(db, n); err != nil {
 			status = http.StatusInternalServerError

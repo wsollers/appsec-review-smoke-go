@@ -1,0 +1,92 @@
+# Planted inventory
+
+This repository is a smoke target for appsec-review. Everything below is deliberate. The
+evaluation answer key lives in the separate `appsec-review-smoke-guide` repository; this file
+describes the target, it is not the key.
+
+Line numbers refer to the tagged head. The fixture file `main.go` is byte-identical to
+`tests/fixtures/graph/codeql_export/go-synthetic/source/main.go` in appsec-review, so the line
+numbers its `expected-facts.json` cites are unchanged. Only `go.mod`'s module path and the files
+around the fixture were added.
+
+## True positives, code
+
+| Id | Weakness | Where | Source to sink |
+| --- | --- | --- | --- |
+| TP-C1 | CWE-89 SQL injection | `main.go` `lookup` | `r.FormValue("name")` in `serve` to `db.Exec` through `quote` (fixture case `sql_cross_function_flow`) |
+| TP-C2 | CWE-78 command injection | `main.go` `serve` | `r.FormValue("name")` to `exec.Command(name)` |
+| TP-C3 | CWE-918 server-side request forgery | `main.go` `serve` | `r.FormValue("name")` to `http.Get(name)` (fixture case `ssrf_sink`) |
+| TP-C4 | CWE-502 deserialization of untrusted data | `main.go` `serve` | `r.Body` to `gob.NewDecoder(r.Body).Decode` (fixture case `deserialization_sink`) |
+| TP-C5 | CWE-78 command injection | `main.go` `main` | `os.Args[1]` and `os.Getenv("SUFFIX")` to `exec.Command` (fixture case `two_sources_one_command`) |
+| TP-C6 | CWE-117 log injection | `logging.go` `recordAccess` | `r.FormValue("user")` to `log.Printf` via `op=audit` |
+| TP-C7 | CWE-601 open redirect | `admin.go` `adminHandler`, `go` op | `r.FormValue("next")` to `http.Redirect` |
+
+TP-C2, TP-C3 and TP-C4 share the fixture function `serve`, which cannot be split without moving
+the fixture's line numbers.
+
+## True positives, dependencies
+
+Declared in `go.mod`, pinned in `go.sum` and listed in `vendor/modules.txt`; no package of theirs is
+imported, so the vendored tree holds no sources and the build never compiles them.
+
+| Id | Package | Version | Advisory | Fixed in | How declared |
+| --- | --- | --- | --- | --- | --- |
+| TP-D1 | golang.org/x/text | v0.3.0 | GO-2020-0015 (CVE-2020-14040) | v0.3.3 | direct requirement |
+| TP-D2 | github.com/tidwall/gjson | v1.6.0 | GO-2021-0059 (CVE-2020-35380) | v1.6.4 | direct requirement |
+| TP-D3 | gopkg.in/yaml.v2 | v2.2.2 | GO-2020-0036 (CVE-2019-11254) | v2.2.8 | transitive through `github.com/spf13/cobra` v0.0.5; recorded in `go.mod` as an `// indirect` requirement, in `go.sum` and in `vendor/modules.txt` |
+
+The same versions carry further advisories (x/text: GO-2021-0113, GO-2022-1059; gjson:
+GO-2021-0054, GO-2022-0957, GO-2021-0265; yaml.v2: GO-2021-0061, GO-2022-0956); the ones in the
+table are the oldest, with the lowest fixed version. `github.com/spf13/cobra` v0.0.5 itself has no
+OSV record.
+
+## Fixed in history
+
+| Id | What | Introduced | Fixed |
+| --- | --- | --- | --- |
+| FX-C1 | CWE-78 command injection in `runTool` (`exec.Command("/bin/sh", "-c", ...)` with the request's tool name) | "Add a tool op that runs maintenance helpers" | "Fix command injection in runTool (CWE-78)": the sink was removed |
+| FX-C2 | CWE-22 path traversal in `readAsset` | "Add an asset op that serves files from the asset root" | "Fix path traversal in readAsset (CWE-22)": `filepath.Clean` and a dominating `strings.HasPrefix` guard now precede `os.ReadFile` |
+| FX-D1 | github.com/gorilla/websocket v1.4.0 (GO-2020-0019, CVE-2020-27813, fixed in v1.4.1) | "Pin golang.org/x/text and gorilla/websocket" | "Upgrade gorilla/websocket from 1.4.0 to 1.5.3" (v1.5.3 has no OSV record; v1.4.1 has GO-2026-6278) |
+
+`SECURITY.md` and `CHANGELOG.md` describe the three fixed items and nothing else.
+
+## False positives
+
+Each is flagged by a rule under appsec-review `rules/semgrep/` and refuted by a code-intelligence
+fact. The only Go rules mounted are `appsec-review.review-signal.sink.go-sql-string-concatenation`
+and `appsec-review.review-signal.privilege_shift.go-tls-verification-disabled`; there is no Go rule
+for `strings.Repeat`, `os.Open` or `exec.Command`, so the fixture's own guarded and sanitized sinks
+(`strings.Repeat` under `count < 100`, `os.Open(filepath.Clean(name))`) are exportable facts but are
+not reported by any mounted rule.
+
+| Id | Where | Flagged by | Refuted by |
+| --- | --- | --- | --- |
+| FP-1 | `store.go` `purgeExpired`: `db.Exec("DELETE ... " + sessionRetentionDays)` | `appsec-review.review-signal.sink.go-sql-string-concatenation` | constant operand: `sessionRetentionDays` is a package constant, so no `dataflow_path` reaches the sink |
+| FP-2 | `store.go` `recentUsers`: `db.Exec("SELECT ... LIMIT " + strconv.Itoa(n))` | `appsec-review.review-signal.sink.go-sql-string-concatenation` | `guard_fact`: `n >= 0 && n < 100` dominates the sink (true_branch) and constrains its operand; `range_fact` upper 99 |
+| FP-3 | `store.go` `userByID`: `db.Exec("SELECT ... id = " + strconv.Itoa(n))` | `appsec-review.review-signal.sink.go-sql-string-concatenation` | `path_sanitizers`: the operand is the decimal form of an integer parsed by `strconv.Atoi` under a dominating error check, so no request text reaches the statement |
+| FP-4 | `store.go` `legacyLookup`: `db.Exec("SELECT ... name = '" + name + "'")` | `appsec-review.review-signal.sink.go-sql-string-concatenation` | dead code: no callers, no entry point, so no `dataflow_path` reaches it |
+| FP-5 | `devtls.go` `insecureClient`: `tls.Config{InsecureSkipVerify: true}` | `appsec-review.review-signal.privilege_shift.go-tls-verification-disabled` | dead code: no callers, no entry point, so no `dataflow_path` and no call path reaches it |
+
+## High-complexity function
+
+`adminHandler` in `admin.go` is the dispatch switch of the admin console and the function the
+history touches most. It holds TP-C7. Its intended cyclomatic complexity is above 15 by the
+appsec-review counter (branches, loops, boolean operators, switch cases and Go error checks); the
+measured value is recorded in the guide.
+
+## Code-intelligence cases
+
+`main.go` carries the appsec-review Go graph-export fixture unchanged: interface dispatch
+(`dispatch`), an unresolved function value (`Apply`), a resolved function value (`pick`), a
+reflective call, argv and environment sources (`main`), a sanitized path (`filepath.Clean` before
+`os.Open`), a dominating and a non-dominating guard on `strings.Repeat`, a narrowing conversion,
+the `quote` flow summary and an unclassified `json.Unmarshal` sink. The fixed state of `readAsset`
+adds a `filepath.Clean` sanitizer and a dominating `strings.HasPrefix` guard.
+
+## History
+
+Produced by `tools/make-history.sh` from `tools/history/steps/`: 34 commits by three synthetic
+authors, dated 2025-06 to 2026-10, including the introduction and fix of each fixed item, a
+dependency upgrade, a rename (`audit.go` to `logging.go`), a revert and its reapply, a hardening
+review that adds `SECURITY.md`, and a commit body that records an investigated report found not
+exploitable (FP-2). Every commit touches at most three files except the initial commit.
